@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            cursor: pointer;
+            /*
+             url (圖檔路徑) x y, 預設樣式  
+             cursor: url("" ) 0 0,auto; */
+             overflow: hidden;
+        }
+
+
+
+        .red {
+            background: rgba(255,0,0,0.0);
+            background-image: url(./gifmaker2.gif);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transform: scaleX(-1);
+            transform-origin: bottom;
+            animation-name: riseup;
+            animation-duration: 0.5s;
+            animation-direction: normal;
+            animation-iteration-count: unset;
+            animation-fill-mode: forwards;
+        }
+            @keyframes riseup {
+                from{
+                    transform: scaleY(0);
+                    opacity: 0;
+                }
+                to{
+                    transform: scaleY(1);
+                    opacity: 1;
+
+                }
+
+                
+            }
+
+            .red::before {  
+
+                width: 100%;
+                height: 100%;
+                content: "";
+                display: block;
+                background-image: url(./dirt2.png);
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: bottom;
+                /* transform: scaleX(-1); */
+
+            }
+
+        .blue {
+            background: rgba(0, 0, 255, 0);
+            background-image: url(./hover_gophers-1.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transform-origin: bottom;
+            animation-name: fade;
+            animation-duration: 0.5s;
+            animation-direction: normal;
+            animation-iteration-count: unset;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fade {
+                from{
+                    transform: scaleY(1);
+                    opacity: 1;
+                }
+                to{
+                    transform: scaleY(0);
+                    opacity: 0;
+
+                }
+
+                
+            }
+
+
+
+        #currentScore {
+            display: inline-block;
+            margin-bottom: 50px;
+        }
+             
+        #score {
+             margin-left: 20%; 
+             display: inline-block; 
+        }
+   
+        #startBtn {
+            width: 100px;
+            padding: 10px;
+            margin: 0 auto;
+            margin-top: 100px;
+            text-align: center;
+            border: solid 1px gray;
+            border-radius: 50px;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            display: table;
+            margin: 0 auto;
+            vertical-align: middle;
+
+        }
+
+        #box {
+            width: 100vw;
+            height: 100vh;
+            display: table-cell;
+            margin: 0 auto;
+            vertical-align: middle;
+            text-align: center;
+        }
+        table{
+            margin: 0 auto;
+        }
+        td {
+            border: solid 0px black;
+            width: 100px;
+            height: 100px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="box">
+            <div id="currentScore">
+                你的分數:
+                <span id="scoreText"> 0 </span>
+            </div>
+            
+            <div id="score">
+                最高分數:
+                <span id="highNameText">沒有人</span>
+                的分數是
+                <span id="highScoreText">0</span>
+            </div>
+
+            <table>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+            
+            <div id="startBtn">開始遊戲</div>
+            <!-- <input type="button" value="開始遊戲" > -->
+
+        </div>
+    </div>
+    <script>
+        let score = 0;
+        let scoreText = document.getElementById("scoreText");
+        let startBtn = document.getElementById("startBtn");
+        let tds = document.getElementsByTagName("td");
+
+        // 設定計時器的變數為 0 ，避免被 clearInterval 清掉，才可以重複利用
+        let gameTimer = 0;
+
+        let high = {
+            name: "",
+            score: 0
+        };
+        let highNameText = document.getElementById("highNameText");
+        let highScoreText = document.getElementById("highScoreText");
+
+        let highStorage = window.localStorage.getItem("highscore");
+        if (highStorage != null) {
+            high = JSON.parse(highStorage);
+            highNameText.innerText = high.name;
+            highScoreText.innerText = high.score;
+        }
+
+        startBtn.onclick = () => {
+            // 將開始按鈕停用
+            startBtn.setAttribute("disabled", true);
+
+            // 分數歸 0
+            score = 0;
+            scoreText.innerText = score;
+
+            gameTimer = setInterval(game, 2000);
+            game();
+            setTimeout(() => {
+                clearInterval(gameTimer);
+                for (let td of tds) {
+                    td.classList.remove("red");
+                    td.classList.remove("blue");
+                }
+                alert(`時間到，你得到 ${score} 分!`);
+                startBtn.removeAttribute("disabled");
+
+                if (score > high.score) {
+                    let playerName = prompt("恭喜你得到最高分，請輸入你的名字");
+                    high.name = playerName;
+                    highNameText.innerText = playerName;
+                    high.score = score;
+                    highScoreText.innerText = score;
+
+                    // window.localStorage.setItem 只能存文字
+                    // JSON.stringify 可以將 JSON 陣列轉成文字
+                    window.localStorage.setItem("highscore", JSON.stringify(high));
+                }
+
+            }, 8000);
+        }
+
+        game = () => { //劃出紅格子的程式段
+            for (let td of tds) {
+                td.classList.remove("red");
+                td.classList.remove("blue");
+            }
+            for (let i = 0; i < 3; i++) {
+                rand = Math.round(Math.random() * 8);
+                if (tds[rand].classList.contains("red")) {
+                    i -= 1;
+                } else {
+                    tds[rand].classList.add("red");
+                }
+                /*   */
+            }
+        }
+        for (let td of tds) { //for裡面一定要加 let!!!
+            td.onclick = () => {
+                if (td.classList.contains("red")) {
+                    td.classList.remove("red");
+                    td.classList.add("blue");
+                    score += 1;
+                    scoreText.innerText = score;
+                }
+            }
+        }
+    </script>
+
+</body>
+
+</html>
